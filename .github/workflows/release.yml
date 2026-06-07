@@ -15,16 +15,29 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.23'
+
+      - name: Set release flags
+        id: flags
+        run: |
+          if [ -n "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
+            echo "skipsign=" >> "$GITHUB_OUTPUT"
+          else
+            echo "skipsign=--skip-sign" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Import GPG key
+        if: steps.flags.outputs.skipsign == ''
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
-      - uses: goreleaser/goreleaser-action@v6
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --clean
+          args: release --clean ${{ steps.flags.outputs.skipsign }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
