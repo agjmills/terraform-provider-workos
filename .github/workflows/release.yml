@@ -22,7 +22,7 @@ jobs:
           if [ -n "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
             echo "skipsign=" >> "$GITHUB_OUTPUT"
           else
-            echo "skipsign=--skip-sign" >> "$GITHUB_OUTPUT"
+            echo "skipsign=--skip=sign" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Import GPG key
